@@ -3,6 +3,7 @@ import os
 
 
 def getFile(client_socket, filename):
+    print("calling getFile")
     client_socket.sendall(f"get {filename}".encode("utf-8"))
     header = client_socket.recv(1024).decode("utf-8")
     if header.startswith("file:"):
@@ -29,12 +30,15 @@ def sendCommand():
     response = client_socket.recv(1024).decode("utf-8")
 
     if response == "Authentication successful":
+        if not os.path.exists(CLIENT_DIR):
+            os.makedirs(CLIENT_DIR)
         while True:
             command = input("> ").strip()
             if command.split(" ")[0] == "get":
                 if len(command.split(" ")) == 2:
-                    print("File Name", file_name)
                     file_name = command.split(" ")[1]
+                    print("File Name", file_name)
+
                     getFile(client_socket, file_name)
                 else:
                     print("Invalid Command")

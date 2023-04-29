@@ -1,6 +1,7 @@
 import socket
 import os
 import shutil
+import traceback
 
 
 def cleanup(client_dir):
@@ -66,8 +67,16 @@ def process():
                     try:
                         filename = args[0]
                         filepath = os.path.join(client_dir, filename)
-                        filesize = os.path.getsize(filepath)
-                        with open(filepath, "rb") as f:
+                        print("filePath", filepath, filename)
+                        try:
+                            filesize = os.path.getsize(filename)
+                            print("File Size", filesize)
+                        except Exception:
+                            print("Error")
+                            filesize = 200
+                            traceback.print_exc()
+
+                        with open(filename, "rb") as f:
                             conn.sendall(f"file:{filename}:{filesize}".encode("utf-8"))
                             while True:
                                 chunk = f.read(1024)
@@ -81,7 +90,7 @@ def process():
 
                 conn.sendall(response.encode("utf-8"))
 
-            cleanup(client_dir)
+            # cleanup(client_dir)
 
         conn.close()
 
