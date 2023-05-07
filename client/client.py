@@ -52,18 +52,10 @@ def sendCommand():
 
 
 if __name__ == "__main__":
-    s = input("Enter the device name: ")
-
-    global HOST
-    global PORT
-    global USERNAME
-    global PASSWORD
-    global CLIENT_DIR
-
     HOST = "localhost"
     PORT = 12345
-    USERNAME = "admin"
-    PASSWORD = "password"
-    CLIENT_DIR = "cliet_dir"
+    USERNAME = input("Enter the username: ")
+    PASSWORD = input("Enter the password: ")
+    CLIENT_DIR = f"{USERNAME}_dir"
 
     sendCommand()
