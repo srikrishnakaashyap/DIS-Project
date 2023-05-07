@@ -16,7 +16,7 @@ def cleanup(client_dir):
 
 def handle_client(conn, addr, username, password):
     if not (username in CREDENTIALS and password == CREDENTIALS[username]):
-        conn.sendall("Authentication Unsuccessful".encode("utf-8"))
+        conn.sendall("Authentication Unsuccessful In the Function".encode("utf-8"))
         return False
     conn.sendall("Authentication successful".encode("utf-8"))
     client_dir = f"{username}_dir"
@@ -25,6 +25,7 @@ def handle_client(conn, addr, username, password):
         os.makedirs(client_dir)
 
     while True:
+        print("INSIDE THE WHILE LOOP")
         data = conn.recv(1024).decode("utf-8")
         if not data:
             break
@@ -57,16 +58,28 @@ def handle_client(conn, addr, username, password):
                     print("File Size", filesize)
                 except Exception:
                     print("Error")
-                    filesize = 200
+
                     traceback.print_exc()
+                    conn.sendall("File Not Found".encode("utf-8"))
+                    continue
 
                 with open(filename, "rb") as f:
-                    conn.sendall(f"file:{filename}:{filesize}".encode("utf-8"))
-                    while True:
-                        chunk = f.read(1024)
+                    header = f"file:{filename}:{filesize}"
+                    print("sending header", header)
+                    # conn.sendall(b"")
+                    conn.sendall(header.encode("utf-8"))
+                    ack = b"ACK"
+                    data = conn.recv(1024)
+
+                    if data == ack:
+                        # while True:
+                        chunk = f.read()
                         if not chunk:
                             break
+                        # conn.sendall(b"")
                         conn.sendall(chunk)
+                        # data = conn.recv(1024)
+
             except:
                 response = "Unable to get file"
         else:
@@ -77,13 +90,13 @@ def handle_client(conn, addr, username, password):
     cleanup(client_dir)
 
 
-def process_client(conn, addr):
-    creds = conn.recv(1024).decode("utf-8")
+def process_client(client_socket, addr):
+    creds = client_socket.recv(1024).decode("utf-8")
     username = creds.strip().split(" ")[0]
     password = creds.strip().split(" ")[1]
-    if not handle_client(conn, addr, username, password):
-        client_sockets.remove(conn)
-        conn.close()
+    if not handle_client(client_socket, addr, username, password):
+        client_sockets.remove(client_socket)
+        client_socket.close()
 
 
 def process():
@@ -96,7 +109,7 @@ def process():
     while True:
         # Use select to multiplex multiple client connections to the server socket
         try:
-            read_sockets, _, _ = select.select([server_socket] + client_sockets, [], [])
+            read_sockets, _, _ = select.select([server_socket], [], [])
         except Exception as e:
             print("112", e)
 
@@ -105,12 +118,14 @@ def process():
                 conn, addr = server_socket.accept()
                 print(f"Connection established with {addr}")
                 client_sockets.append(conn)
-                t = threading.Thread(target=process_client, args=(conn, addr))
-                t.start()
+                # t = threading.Thread(target=process_client, args=(conn, addr))
+                # t.start()
+                process_client(conn, addr)
             else:
                 try:
-                    t = threading.Thread(target=process_client, args=(conn, addr))
-                    t.start()
+                    # t = threading.Thread(target=process_client, args=(conn, addr))
+                    # t.start()
+                    process_client(conn, addr)
                 except Exception as e:
                     print(f"Error: {e}")
                     client_sockets.remove(sock)
@@ -125,9 +140,7 @@ if __name__ == "__main__":
     PORT = 12345
 
     CREDENTIALS["kaashyap"] = "test"
-    CREDENTIALS["arun"] = "test"
+    CREDENTIALS["abhilash"] = "test"
     CREDENTIALS["test"] = "test"
-
-    print("CREDENTIALS", CREDENTIALS)
 
     process()

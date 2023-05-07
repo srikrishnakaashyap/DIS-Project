@@ -12,12 +12,17 @@ def getFile(client_socket, filename):
     print("calling getFile")
     client_socket.sendall(f"get {filename}".encode("utf-8"))
     header = client_socket.recv(1024).decode("utf-8")
+    print("OUTSIDE IF", header)
     if header.startswith("file:"):
+        print("INSIDE IF", header)
         _, filename, filesize = header.split(":")
         filesize = int(filesize)
+
         with open(os.path.join(CLIENT_DIR, filename), "wb") as f:
             bytes_received = 0
+            print("BEFORE WHILE")
             while bytes_received < filesize:
+                print("BYTES RECEIVED", bytes_received)
                 chunk = client_socket.recv(min(1024, filesize - bytes_received))
                 if not chunk:
                     break
@@ -71,21 +76,17 @@ def sendCommand():
                 else:
                     print("Invalid Command")
 
-            # else:
-            #     client_socket.sendall(command.encode("utf-8"))
-            #     response = client_socket.recv(1024).decode("utf-8")
-            #     print(response)
     else:
         print("Authentication failed")
         client_socket.close()
 
 
 if __name__ == "__main__":
-    global HOST
-    global PORT
-    global USERNAME
-    global PASSWORD
-    global CLIENT_DIR
+    # global HOST
+    # global PORT
+    # global USERNAME
+    # global PASSWORD
+    # CLIENT_DIR
 
     HOST = "localhost"
     PORT = 12345
