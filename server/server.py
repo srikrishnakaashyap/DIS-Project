@@ -17,6 +17,7 @@ def cleanup(client_dir):
 
 def handle_client(conn, addr, username):
     client_dir = f"{username}_dir"
+    os.chdir(os.path.join(ROOT_PATH, client_dir))
     while True:
         data = conn.recv(1024).decode("utf-8")
         if not data:
@@ -122,5 +123,6 @@ if __name__ == "__main__":
     CREDENTIALS["kaashyap"] = "test"
     CREDENTIALS["abhilash"] = "test"
     CREDENTIALS["test"] = "test"
+    ROOT_PATH = os.getcwd()
 
     process()

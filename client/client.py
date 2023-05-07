@@ -1,5 +1,6 @@
 import socket
 import os
+import time
 
 
 def getFile(client_socket, filename):
@@ -9,6 +10,7 @@ def getFile(client_socket, filename):
     if header.startswith("file:"):
         _, filename, filesize = header.split(":")
         filesize = int(filesize)
+        start_time = time.time()
         with open(os.path.join(CLIENT_DIR, filename), "wb") as f:
             bytes_received = 0
             while bytes_received < filesize:
@@ -17,7 +19,9 @@ def getFile(client_socket, filename):
                     break
                 f.write(chunk)
                 bytes_received += len(chunk)
-        print(f"{filename} received successfully")
+        print(
+            f"{filename} with {filesize} received successfully in {time.time() - start_time} time"
+        )
 
 
 def sendCommand():
