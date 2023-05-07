@@ -14,18 +14,10 @@ def cleanup(client_dir):
     shutil.rmtree(client_dir)
 
 
-def handle_client(conn, addr, username, password):
-    if not (username in CREDENTIALS and password == CREDENTIALS[username]):
-        conn.sendall("Authentication Unsuccessful In the Function".encode("utf-8"))
-        return False
-    conn.sendall("Authentication successful".encode("utf-8"))
+def handle_client(conn, addr, username):
     client_dir = f"{username}_dir"
-
-    if not os.path.exists(client_dir):
-        os.makedirs(client_dir)
-
+    os.chdir(os.path.join(ROOT_PATH, client_dir))
     while True:
-        print("INSIDE THE WHILE LOOP")
         data = conn.recv(1024).decode("utf-8")
         if not data:
             break
@@ -58,45 +50,22 @@ def handle_client(conn, addr, username, password):
                     print("File Size", filesize)
                 except Exception:
                     print("Error")
-
+                    filesize = 200
                     traceback.print_exc()
-                    conn.sendall("File Not Found".encode("utf-8"))
-                    continue
 
                 with open(filename, "rb") as f:
-                    header = f"file:{filename}:{filesize}"
-                    print("sending header", header)
-                    # conn.sendall(b"")
-                    conn.sendall(header.encode("utf-8"))
-                    ack = b"ACK"
-                    data = conn.recv(1024)
-
-                    if data == ack:
-                        # while True:
-                        chunk = f.read()
+                    conn.sendall(f"file:{filename}:{filesize}".encode("utf-8"))
+                    while True:
+                        chunk = f.read(1024)
                         if not chunk:
                             break
-                        # conn.sendall(b"")
                         conn.sendall(chunk)
-                        # data = conn.recv(1024)
-
             except:
                 response = "Unable to get file"
         else:
             response = "Unknown command"
 
         conn.sendall(response.encode("utf-8"))
-
-    cleanup(client_dir)
-
-
-def process_client(client_socket, addr):
-    creds = client_socket.recv(1024).decode("utf-8")
-    username = creds.strip().split(" ")[0]
-    password = creds.strip().split(" ")[1]
-    if not handle_client(client_socket, addr, username, password):
-        client_sockets.remove(client_socket)
-        client_socket.close()
 
 
 def process():
@@ -107,40 +76,52 @@ def process():
     print(f"Server listening on port {PORT}")
 
     while True:
-        # Use select to multiplex multiple client connections to the server socket
         try:
-            read_sockets, _, _ = select.select([server_socket], [], [])
+            read_sockets, _, _ = select.select([server_socket] + client_sockets, [], [])
         except Exception as e:
             print("112", e)
 
         for sock in read_sockets:
-            if sock == server_socket:
-                conn, addr = server_socket.accept()
-                print(f"Connection established with {addr}")
-                client_sockets.append(conn)
-                # t = threading.Thread(target=process_client, args=(conn, addr))
-                # t.start()
-                process_client(conn, addr)
-            else:
-                try:
-                    # t = threading.Thread(target=process_client, args=(conn, addr))
-                    # t.start()
-                    process_client(conn, addr)
-                except Exception as e:
-                    print(f"Error: {e}")
-                    client_sockets.remove(sock)
-                    sock.close()
+            conn, addr = sock.accept()
+            authenticated = False
+
+            while not authenticated:
+                data = conn.recv(1024).decode("utf-8")
+                if not data:
+                    break
+
+                username, password = data.split()
+
+                if username in CREDENTIALS and password == CREDENTIALS[username]:
+                    authenticated = True
+                    client_dir = f"{username}_dir"
+
+                    if not os.path.exists(client_dir):
+                        os.makedirs(client_dir)
+
+                    conn.sendall("Authentication successful".encode("utf-8"))
+                else:
+                    conn.sendall("Authentication failed".encode("utf-8"))
+
+                print("Authenticated", authenticated)
+
+            if authenticated:
+                t = threading.Thread(target=handle_client, args=(conn, addr, username))
+                t.start()
+                # handle_client(conn, addr, username)
 
 
 if __name__ == "__main__":
-    global HOST
-    global PORT
+    # global HOST
+    # global PORT
+    # global USERNAME
+    # global PASSWORD
 
-    HOST = "localhost"
+    HOST = "192.168.1.5"
     PORT = 12345
-
     CREDENTIALS["kaashyap"] = "test"
     CREDENTIALS["abhilash"] = "test"
     CREDENTIALS["test"] = "test"
+    ROOT_PATH = os.getcwd()
 
     process()

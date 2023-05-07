@@ -1,0 +1,40 @@
+.command-box {
+    background-color: #1d1f21;
+    color: #c5c8c6;
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 12px;
+    height: 400px;
+    padding: 10px;
+    overflow-y: scroll;
+}
+
+.command-box .command-history {
+    margin-bottom: 10px;
+}
+
+.command-box .command-history p {
+    margin: 0;
+    padding: 0;
+}
+
+.command-box .input-group {
+    margin-bottom: 10px;
+}
+
+.command-box .form-control {
+    background-color: #373b41;
+    border: none;
+    color: #c5c8c6;
+}
+
+.command-box .form-control:focus {
+    background-color: #373b41;
+    border: none;
+    box-shadow: none;
+    color: #c5c8c6;
+}
+
+.command-box .command-response {
+    margin: 10px 0;
+    white-space: pre-wrap;
+}
