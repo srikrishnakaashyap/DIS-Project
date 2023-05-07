@@ -19,7 +19,7 @@ def home():
         print("CLIENT SOCKET", client_socket)
         print(GC.CLIENT_SOCKET)
 
-        if client_socket == -1:
+        if not client_socket:
             return render_template(
                 "login.html",
                 message="Invalid Authentication or Server is unavailable",
