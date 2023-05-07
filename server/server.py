@@ -93,7 +93,7 @@ def process():
 
                 username, password = data.split()
 
-                if username in CREDENTIALS and password in CREDENTIALS[username]:
+                if username in CREDENTIALS and password == CREDENTIALS[username]:
                     authenticated = True
                     client_dir = f"{username}_dir"
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     # global USERNAME
     # global PASSWORD
 
-    HOST = "localhost"
+    HOST = "192.168.1.5"
     PORT = 12345
     CREDENTIALS["kaashyap"] = "test"
     CREDENTIALS["abhilash"] = "test"

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Command Prompt</h2>
+        <hr>
+        <div class="command-box">
+            <div class="command-history">
+                {% for command in command_history %}
+                <p>{{ command }}</p>
+                {% endfor %}
+            </div>
+            <form method="post" action="/command">
+                <div class="input-group">
+                    <span class="input-group-addon">{{ prompt }}</span>
+                    <input type="text" class="form-control" name="command" autofocus autocomplete="off">
+                </div>
+            </form>
+            {% if response %}
+            <p class="command-response">{{ response }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
