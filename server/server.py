@@ -39,7 +39,7 @@ def handle_client(conn, addr, username):
             except:
                 response = "Unable to change directory"
         elif command == "pwd":
-            response = os.getcwd().replace(client_dir, "", 1)
+            response = os.getcwd()
         elif command == "get":
             try:
                 filename = args[0]
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     # global PASSWORD
 
     HOST = "192.168.1.5"
-    PORT = 12345
+    PORT = 12346
     CREDENTIALS["kaashyap"] = "test"
     CREDENTIALS["abhilash"] = "test"
     CREDENTIALS["test"] = "test"
